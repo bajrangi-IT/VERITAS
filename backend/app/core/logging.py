@@ -7,19 +7,22 @@ import logging
 import sys
 import re
 
-SENSITIVE_PATTERNS = [
-    re.compile(r'(api[-_]?key|secret|token|password|authorization)=([^\s&]+)', re.IGNORECASE),
-    re.compile(r'Bearer\s+[A-Za-z0-9\-\._~\+\/]+=*', re.IGNORECASE),
-]
-
-
 class SanitizedFormatter(logging.Formatter):
     """Masks secret values and tokens from application logs."""
     def format(self, record: logging.LogRecord) -> str:
         orig = super().format(record)
-        sanitized = orig
-        for pattern in SENSITIVE_PATTERNS:
-            sanitized = pattern.sub(r'\1=********', sanitized)
+        sanitized = re.sub(
+            r'(api[-_]?key|secret|token|password|authorization)=([^\s&]+)',
+            r'\1=********',
+            orig,
+            flags=re.IGNORECASE
+        )
+        sanitized = re.sub(
+            r'Bearer\s+[A-Za-z0-9\-\._~\+\/]+=*',
+            'Bearer ********',
+            sanitized,
+            flags=re.IGNORECASE
+        )
         return sanitized
 
 

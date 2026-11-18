@@ -130,6 +130,7 @@ class Report(BaseModel):
     """Final synthesis report delivering verified intelligence."""
     report_id: str = Field(default_factory=lambda: str(uuid4())[:12])
     session_id: str
+    verdict: str = Field(default="", description="Direct, concise bottom-line verdict answering the inquiry")
     executive_summary: str
     methodology: str
     findings: List[Dict[str, Any]]

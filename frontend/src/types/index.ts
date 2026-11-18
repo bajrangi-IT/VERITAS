@@ -78,6 +78,7 @@ export interface ReportFinding {
 export interface Report {
   report_id: string;
   session_id: string;
+  verdict?: string;
   executive_summary: string;
   methodology: string;
   findings: ReportFinding[];

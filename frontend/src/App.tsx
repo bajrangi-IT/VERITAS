@@ -34,7 +34,8 @@ import {
   ArrowUpRight,
   Layers,
   Activity,
-  Maximize2
+  Check,
+  Pin
 } from 'lucide-react';
 
 const AGENT_ICONS: Record<string, React.ReactNode> = {
@@ -47,12 +48,12 @@ const AGENT_ICONS: Record<string, React.ReactNode> = {
 };
 
 const AGENT_TITLES: Record<string, string> = {
-  orchestrator: 'Orchestrator Agent',
-  researcher: 'Researcher Agent',
-  verifier: 'Verifier Agent',
-  skeptic: 'Skeptic Agent',
-  evidence_analyst: 'Evidence Analyst Agent',
-  synthesis: 'Synthesis Agent',
+  orchestrator: '1. Orchestrator',
+  researcher: '2. Researcher',
+  verifier: '3. Verifier',
+  skeptic: '4. Skeptic',
+  evidence_analyst: '5. Evidence Analyst',
+  synthesis: '6. Synthesis',
 };
 
 export const App: React.FC = () => {
@@ -77,7 +78,7 @@ export const App: React.FC = () => {
     }).catch(() => null);
   }, []);
 
-  // SSE streaming
+  // SSE real-time streaming
   useEffect(() => {
     if (!activeSession) return;
     if (cleanupSseRef.current) {
@@ -119,7 +120,7 @@ export const App: React.FC = () => {
     if (!cleanQ || cleanQ.length < 3) return;
 
     setIsLoading(true);
-    setEventLogs([{ time: new Date().toLocaleTimeString(), msg: `Initiated research on: "${cleanQ}"`, type: 'init' }]);
+    setEventLogs([{ time: new Date().toLocaleTimeString(), msg: `Initiating research: "${cleanQ}"`, type: 'init' }]);
     try {
       const newSession = await createResearch({
         query: cleanQ,
@@ -147,7 +148,7 @@ export const App: React.FC = () => {
 
   return (
     <div className="min-h-screen bg-[#0B0F19] text-slate-100 flex flex-col font-sans selection:bg-indigo-500/30">
-      {/* Top Navigation Bar */}
+      {/* Top Header */}
       <header className="border-b border-surface-border bg-[#0B0F19]/90 backdrop-blur-md sticky top-0 z-50 no-print">
         <div className="max-w-7xl mx-auto px-4 h-16 flex items-center justify-between">
           <div className="flex items-center gap-3">
@@ -161,7 +162,7 @@ export const App: React.FC = () => {
                 VERITAS <span className="text-transparent bg-clip-text bg-gradient-to-r from-indigo-400 to-cyan-400">AI</span>
               </span>
               <span className="text-[10px] text-slate-400 font-mono block -mt-1">
-                EVIDENCE INTELLIGENCE & FACT VERIFICATION
+                AUTONOMOUS FACT VERIFICATION
               </span>
             </div>
           </div>
@@ -185,25 +186,26 @@ export const App: React.FC = () => {
                 className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold text-white bg-indigo-600 hover:bg-indigo-500 transition-colors shadow-sm"
               >
                 <Printer className="w-3.5 h-3.5" />
-                <span>Export PDF</span>
+                <span>Print / PDF</span>
               </button>
             )}
           </div>
         </div>
       </header>
 
-      {/* Main Content Layout */}
+      {/* Main Workspace Layout */}
       <div className="flex-1 max-w-7xl w-full mx-auto px-4 py-6 flex flex-col gap-6">
-        {/* Prominent Search Bar */}
-        <section className="no-print">
-          <form onSubmit={handleSearch} className="max-w-4xl mx-auto space-y-2">
+        {/* Direct Search Bar */}
+        <section className="no-print" aria-label="Search and controls">
+          <form onSubmit={handleSearch} role="search" aria-label="Investigation Query Search" className="max-w-4xl mx-auto space-y-2">
             <div className="relative flex items-center">
-              <Search className="w-5 h-5 text-slate-400 absolute left-4 pointer-events-none" />
+              <Search className="w-5 h-5 text-slate-400 absolute left-4 pointer-events-none" aria-hidden="true" />
               <input
                 type="text"
                 value={query}
                 onChange={(e) => setQuery(e.target.value)}
-                placeholder="Ask any research question to verify (e.g. Did NASA confirm water on Mars?)..."
+                placeholder="Ask any question to verify (e.g. Did NASA confirm water on Mars?)..."
+                aria-label="Research query or assertion to verify"
                 className="w-full bg-surface-card border border-surface-border rounded-2xl pl-12 pr-32 py-3.5 text-base text-slate-100 placeholder-slate-500 shadow-xl focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 focus:outline-none transition-all"
               />
               <div className="absolute right-2.5 flex items-center gap-2">
@@ -238,10 +240,10 @@ export const App: React.FC = () => {
               </div>
             </div>
 
-            {/* Subtle preset hint */}
+            {/* Benchmark shortcut */}
             <div className="flex items-center justify-between text-xs text-slate-500 px-2">
               <div className="flex items-center gap-3">
-                <span>Filter:</span>
+                <span>Domain:</span>
                 <select
                   value={domain}
                   onChange={(e) => setDomain(e.target.value as ResearchDomain)}
@@ -261,7 +263,7 @@ export const App: React.FC = () => {
                   setQuery(q);
                   createResearch({ query: q, domain: 'technology' }).then(setActiveSession);
                 }}
-                className="text-slate-500 hover:text-indigo-400 transition-colors underline"
+                className="text-slate-500 hover:text-indigo-400 transition-colors underline font-mono text-[11px]"
               >
                 Benchmark: AI Developers vs Productivity
               </button>
@@ -271,15 +273,15 @@ export const App: React.FC = () => {
 
         {/* 2-Column Responsive Workspace */}
         <div className="flex-1 grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
-          {/* Main Stage (Left / Center Column - 8 Cols or 12 Cols if Sidebar Hidden) */}
-          <div className={`${showAgentSidebar ? 'lg:col-span-8' : 'lg:col-span-12'} space-y-6 transition-all`}>
+          {/* Main Stage (Left / Center - 8 Cols) */}
+          <main role="main" aria-label="Investigation Report" className={`${showAgentSidebar ? 'lg:col-span-8' : 'lg:col-span-12'} space-y-6 transition-all`}>
             {activeSession ? (
               <div className="space-y-6">
                 {/* Inquiry Title Banner */}
-                <div className="border-b border-surface-border pb-4">
-                  <div className="flex items-center gap-2 mb-1.5">
+                <div className="border-b border-surface-border pb-3">
+                  <div className="flex items-center gap-2 mb-1">
                     <span className="text-[11px] font-mono text-indigo-400 uppercase tracking-wider bg-indigo-950/40 px-2 py-0.5 rounded border border-indigo-800/40">
-                      Inquiry Domain: {activeSession.domain}
+                      Domain: {activeSession.domain}
                     </span>
                     {report && (
                       <span className="text-[11px] font-mono text-emerald-400 bg-emerald-500/10 px-2 py-0.5 rounded border border-emerald-500/20">
@@ -287,12 +289,12 @@ export const App: React.FC = () => {
                       </span>
                     )}
                   </div>
-                  <h1 className="text-2xl sm:text-3xl font-extrabold text-white tracking-tight leading-snug">
+                  <h1 className="text-xl sm:text-2xl font-bold text-white tracking-tight">
                     {activeSession.original_query}
                   </h1>
                 </div>
 
-                {/* Loading State when running */}
+                {/* Pipeline Active Loader */}
                 {isRunning && (
                   <div className="p-8 rounded-2xl border border-indigo-500/30 bg-surface-card/60 backdrop-blur text-center space-y-3">
                     <Loader2 className="w-8 h-8 animate-spin text-indigo-400 mx-auto" />
@@ -300,98 +302,92 @@ export const App: React.FC = () => {
                       Multi-Agent Pipeline Actively Investigating...
                     </h3>
                     <p className="text-xs text-slate-400 max-w-md mx-auto">
-                      The 6 autonomous agents are decomposing this proposition, querying authoritative sources, cross-checking claims, and detecting potential counterevidence.
+                      Decomposing inquiry, querying external evidence, cross-verifying propositions, and formulating the direct bottom-line verdict.
                     </p>
                   </div>
                 )}
 
-                {/* THE VERIFIED ANSWER / EXECUTIVE REPORT */}
+                {/* THE CLEAR, VISIBLE ANSWER STAGE */}
                 {report && (
-                  <article className="rounded-2xl border border-surface-border bg-surface-card p-6 sm:p-8 space-y-6 shadow-2xl">
-                    {/* Primary Answer Block */}
-                    <div className="space-y-3">
-                      <div className="flex items-center justify-between">
-                        <h2 className="text-sm font-bold uppercase tracking-wider text-indigo-400 flex items-center gap-2">
-                          <Sparkles className="w-4 h-4 text-cyan-400" />
-                          <span>Executive Verified Answer</span>
-                        </h2>
+                  <article className="space-y-6">
+                    {/* 1. THE MAIN LINE / DIRECT BOTTOM-LINE VERDICT (PROMINENT & UNMISTAKABLE) */}
+                    <div role="region" aria-label="Direct Bottom-Line Verdict" className="p-6 rounded-2xl bg-gradient-to-br from-indigo-950/70 via-surface-card to-[#0B0F19] border-2 border-indigo-500/50 shadow-2xl relative overflow-hidden">
+                      <div className="flex items-center gap-2 mb-3">
+                        <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-extrabold uppercase tracking-wider bg-indigo-600 text-white shadow-md shadow-indigo-600/30">
+                          <Pin className="w-3.5 h-3.5" />
+                          <span>Direct Verdict</span>
+                        </span>
+                        <span className="text-xs font-mono text-emerald-400 bg-emerald-500/10 px-2.5 py-0.5 rounded-full border border-emerald-500/30">
+                          {(report.evidence_score * 100).toFixed(0)}% Evidential Score
+                        </span>
                       </div>
-                      <div className="p-5 rounded-xl bg-surface/70 border border-surface-border text-sm sm:text-base text-slate-100 leading-relaxed font-normal shadow-inner">
-                        {report.executive_summary}
+
+                      {/* THE MAIN LINE */}
+                      <p className="text-base sm:text-lg font-bold text-white leading-relaxed mb-4">
+                        {report.verdict || report.executive_summary.split("\n")[0]}
+                      </p>
+
+                      {/* BULLETED TAKEAWAYS */}
+                      <div className="pt-3 border-t border-surface-border/60 space-y-2">
+                        {report.executive_summary.split("\n").map((line, idx) => {
+                          const clean = line.trim();
+                          if (!clean) return null;
+                          return (
+                            <div key={idx} className="flex items-start gap-2.5 text-xs sm:text-sm text-slate-200 leading-relaxed">
+                              <span className="text-cyan-400 font-bold shrink-0 mt-0.5">•</span>
+                              <span>{clean.replace(/^[•\-\*]\s*/, '')}</span>
+                            </div>
+                          );
+                        })}
                       </div>
                     </div>
 
-                    {/* Core Evidential Takeaways */}
-                    <div className="space-y-3 pt-2">
-                      <h3 className="text-xs font-bold uppercase tracking-wider text-slate-400">
-                        Key Empirical Findings
-                      </h3>
-                      <div className="grid grid-cols-1 gap-2.5">
-                        {report.findings.map((f, i) => (
-                          <div
-                            key={i}
-                            className="p-3.5 rounded-xl bg-surface border border-surface-border flex items-start justify-between gap-3"
-                          >
-                            <div>
-                              <h4 className="text-xs font-semibold text-slate-200 mb-0.5">{f.topic}</h4>
-                              <p className="text-xs text-slate-300 leading-relaxed">{f.finding}</p>
+                    {/* 2. EMPIRICAL DISCREPANCIES (If Found) */}
+                    {report.conflicts && report.conflicts.length > 0 && (
+                      <div className="rounded-xl border border-amber-500/30 bg-surface-card p-5 space-y-3">
+                        <h3 className="text-xs font-bold uppercase tracking-wider text-amber-400 flex items-center gap-1.5">
+                          <AlertTriangle className="w-4 h-4" />
+                          <span>Empirical Discrepancies & Nuances Preserved</span>
+                        </h3>
+                        {report.conflicts.map((conf) => (
+                          <div key={conf.conflict_id} className="space-y-2 text-xs">
+                            <h4 className="font-semibold text-amber-200">{conf.proposition}</h4>
+                            <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
+                              <div className="p-2.5 rounded-lg bg-[#0B0F19] border border-surface-border">
+                                <span className="font-semibold text-cyan-400 block mb-0.5 text-[11px]">Position Alpha:</span>
+                                <p className="text-slate-300">{conf.side_a_assertion}</p>
+                              </div>
+                              <div className="p-2.5 rounded-lg bg-[#0B0F19] border border-surface-border">
+                                <span className="font-semibold text-rose-400 block mb-0.5 text-[11px]">Counter-Position Beta:</span>
+                                <p className="text-slate-300">{conf.side_b_assertion}</p>
+                              </div>
                             </div>
-                            <span className="text-[10px] font-mono uppercase px-2 py-0.5 rounded bg-indigo-950/60 text-indigo-300 border border-indigo-800/40 shrink-0">
-                              {f.supported_status}
-                            </span>
+                            <p className="text-slate-400 italic text-[11px] pt-0.5">{conf.explanation}</p>
                           </div>
                         ))}
                       </div>
-                    </div>
-
-                    {/* Discrepancies & Nuances (Preserved) */}
-                    {report.conflicts && report.conflicts.length > 0 && (
-                      <div className="space-y-3 pt-2">
-                        <h3 className="text-xs font-bold uppercase tracking-wider text-amber-400 flex items-center gap-1.5">
-                          <AlertTriangle className="w-3.5 h-3.5" />
-                          <span>Empirical Discrepancies & Nuances Preserved</span>
-                        </h3>
-                        <div className="space-y-2.5">
-                          {report.conflicts.map((conf) => (
-                            <div key={conf.conflict_id} className="p-4 rounded-xl border border-amber-500/30 bg-surface/80 space-y-2">
-                              <h4 className="text-xs font-bold text-amber-300">{conf.proposition}</h4>
-                              <div className="grid grid-cols-1 md:grid-cols-2 gap-3 text-xs">
-                                <div className="p-2.5 rounded bg-[#0B0F19] border border-surface-border">
-                                  <span className="font-semibold text-cyan-400 block mb-0.5 text-[11px]">Observed Position A:</span>
-                                  <p className="text-slate-300 text-xs">{conf.side_a_assertion}</p>
-                                </div>
-                                <div className="p-2.5 rounded bg-[#0B0F19] border border-surface-border">
-                                  <span className="font-semibold text-rose-400 block mb-0.5 text-[11px]">Counter-Perspective B:</span>
-                                  <p className="text-slate-300 text-xs">{conf.side_b_assertion}</p>
-                                </div>
-                              </div>
-                              <p className="text-xs text-slate-400 italic pt-1">{conf.explanation}</p>
-                            </div>
-                          ))}
-                        </div>
-                      </div>
                     )}
 
-                    {/* Verified Claims Matrix */}
-                    <div className="space-y-3 pt-2">
+                    {/* 3. TESTED CLAIMS MATRIX */}
+                    <div className="rounded-xl border border-surface-border bg-surface-card p-5 space-y-3">
                       <h3 className="text-xs font-bold uppercase tracking-wider text-slate-400 flex items-center gap-1.5">
-                        <CheckCircle2 className="w-3.5 h-3.5 text-emerald-400" />
-                        <span>Tested Proposition Claims ({activeSession.claims.length})</span>
+                        <CheckCircle2 className="w-4 h-4 text-emerald-400" />
+                        <span>Verified Claims & Evidential Proof ({activeSession.claims.length})</span>
                       </h3>
                       <div className="space-y-2">
                         {activeSession.claims.map((claim) => (
                           <div
                             key={claim.claim_id}
-                            className="p-3.5 rounded-xl bg-surface border border-surface-border flex flex-col sm:flex-row sm:items-center justify-between gap-3 text-xs"
+                            className="p-3 rounded-lg bg-surface border border-surface-border flex flex-col sm:flex-row sm:items-center justify-between gap-3 text-xs"
                           >
                             <div className="flex-1">
-                              <span className="text-[10px] font-mono text-slate-500 block mb-0.5">#{claim.claim_id}</span>
-                              <p className="font-medium text-slate-200">"{claim.claim_text}"</p>
+                              <span className="text-[10px] font-mono text-slate-500 block">Claim #{claim.claim_id}</span>
+                              <p className="font-medium text-slate-200 mt-0.5">"{claim.claim_text}"</p>
                               {claim.explanation && (
                                 <p className="text-slate-400 mt-1 text-[11px]">{claim.explanation}</p>
                               )}
                             </div>
-                            <div className="shrink-0 flex sm:flex-col items-end gap-1">
+                            <div className="shrink-0 flex items-center gap-2">
                               <ConfidenceBadge status={claim.verification_status} score={claim.confidence_score} />
                             </div>
                           </div>
@@ -399,11 +395,11 @@ export const App: React.FC = () => {
                       </div>
                     </div>
 
-                    {/* Gathered Sources & Citations */}
-                    <div className="space-y-3 pt-4 border-t border-surface-border">
+                    {/* 4. GATHERED SOURCE BIBLIOGRAPHY */}
+                    <div className="rounded-xl border border-surface-border bg-surface-card p-5 space-y-3">
                       <h3 className="text-xs font-bold uppercase tracking-wider text-slate-400 flex items-center gap-1.5">
-                        <BookOpen className="w-3.5 h-3.5 text-cyan-400" />
-                        <span>Primary Evidence Sources ({activeSession.sources.length})</span>
+                        <BookOpen className="w-4 h-4 text-cyan-400" />
+                        <span>Primary Citations & Evidence Ledger ({activeSession.sources.length})</span>
                       </h3>
                       <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
                         {activeSession.sources.map((s) => (
@@ -416,8 +412,8 @@ export const App: React.FC = () => {
                           >
                             <div>
                               <div className="flex items-center justify-between text-[10px] font-mono text-slate-400 mb-1">
-                                <span className="text-indigo-400 truncate max-w-[150px]">{s.publisher}</span>
-                                <span>{(s.credibility_score * 100).toFixed(0)}% Score</span>
+                                <span className="text-indigo-400 truncate max-w-[140px]">{s.publisher}</span>
+                                <span>{(s.credibility_score * 100).toFixed(0)}% Authority</span>
                               </div>
                               <h4 className="text-xs font-semibold text-slate-200 group-hover:text-indigo-300 transition-colors line-clamp-1">
                                 {s.title}
@@ -429,7 +425,7 @@ export const App: React.FC = () => {
                               )}
                             </div>
                             <div className="flex items-center gap-1 text-[10px] text-slate-500 font-mono mt-2 group-hover:text-slate-300">
-                              <span>Open Citation</span>
+                              <span>Open Citation Source</span>
                               <ArrowUpRight className="w-3 h-3" />
                             </div>
                           </a>
@@ -442,13 +438,13 @@ export const App: React.FC = () => {
             ) : (
               <div className="p-16 text-center rounded-2xl border border-surface-border bg-surface-card space-y-3">
                 <Search className="w-10 h-10 text-indigo-400 mx-auto opacity-60" />
-                <h2 className="text-base font-bold text-white">Enter a Question Above to Begin</h2>
+                <h2 className="text-base font-bold text-white">Enter an Inquiry Above to Begin</h2>
                 <p className="text-xs text-slate-400 max-w-md mx-auto">
-                  Type any empirical proposition or question. The autonomous agents will verify claims, detect discrepancies, and produce a clear verified answer.
+                  Type any question to investigate. The autonomous agents will extract citations, verify claims, and present the direct bottom-line verdict clearly.
                 </p>
               </div>
             )}
-          </div>
+          </main>
 
           {/* SIDE PANEL: Agentic Workflow Monitor (Right Column - 4 Cols) */}
           {showAgentSidebar && (
@@ -468,7 +464,7 @@ export const App: React.FC = () => {
                   )}
                 </div>
 
-                {/* 6 Specialized Agent Cards in Side Feed */}
+                {/* 6 Specialized Agent Cards */}
                 <div className="space-y-2">
                   {[
                     'orchestrator',
@@ -477,7 +473,7 @@ export const App: React.FC = () => {
                     'skeptic',
                     'evidence_analyst',
                     'synthesis'
-                  ].map((agentId, index) => {
+                  ].map((agentId) => {
                     const agent = activeSession?.agents[agentId];
                     const isRunningAg = agent?.status === 'running';
                     const isDoneAg = agent?.status === 'completed';
@@ -485,15 +481,15 @@ export const App: React.FC = () => {
                     return (
                       <div
                         key={agentId}
-                        className={`p-3 rounded-xl border text-xs transition-all ${
+                        className={`p-2.5 rounded-xl border text-xs transition-all ${
                           isRunningAg
-                            ? 'bg-indigo-950/70 border-indigo-500 shadow-md text-indigo-200 animate-pulse'
+                            ? 'bg-indigo-950/70 border-indigo-500 text-indigo-200 animate-pulse shadow-md'
                             : isDoneAg
                             ? 'bg-surface/80 border-surface-border text-slate-200'
                             : 'bg-surface/30 border-surface-border/50 text-slate-500 opacity-60'
                         }`}
                       >
-                        <div className="flex items-center justify-between mb-1">
+                        <div className="flex items-center justify-between mb-0.5">
                           <div className="flex items-center gap-2">
                             {AGENT_ICONS[agentId]}
                             <span className="font-semibold text-xs text-slate-100">
@@ -513,12 +509,12 @@ export const App: React.FC = () => {
                         </div>
 
                         {agent?.output_summary ? (
-                          <p className="text-[11px] text-slate-400 line-clamp-2 mt-1">
+                          <p className="text-[11px] text-slate-400 line-clamp-1 mt-0.5">
                             {agent.output_summary}
                           </p>
                         ) : (
                           <p className="text-[10px] text-slate-500 italic mt-0.5">
-                            {isRunningAg ? 'Executing assigned task...' : 'Standby in orchestration pipeline'}
+                            {isRunningAg ? 'Active...' : 'Standby in pipeline'}
                           </p>
                         )}
                       </div>
@@ -526,19 +522,19 @@ export const App: React.FC = () => {
                   })}
                 </div>
 
-                {/* Live Real-time Event Feed */}
-                <div className="pt-3 border-t border-surface-border space-y-2">
-                  <span className="text-[11px] font-mono uppercase tracking-wider text-slate-400 block">
+                {/* Real-time Telemetry Stream */}
+                <div className="pt-2 border-t border-surface-border space-y-1.5">
+                  <span className="text-[10px] font-mono uppercase tracking-wider text-slate-400 block">
                     Execution Telemetry
                   </span>
-                  <div className="h-32 overflow-y-auto space-y-1.5 text-[10px] font-mono text-slate-400 pr-1">
+                  <div className="h-28 overflow-y-auto space-y-1 text-[10px] font-mono text-slate-400 pr-1">
                     {eventLogs.length === 0 ? (
                       <span className="text-slate-600 italic">No telemetry recorded yet.</span>
                     ) : (
                       eventLogs.map((log, idx) => (
                         <div key={idx} className="flex items-start gap-1.5 leading-tight">
                           <span className="text-slate-600 shrink-0">[{log.time}]</span>
-                          <span className={log.type === 'error' ? 'text-rose-400' : 'text-slate-300'}>
+                          <span className={log.type === 'error' ? 'text-rose-400' : 'text-slate-300 truncate'}>
                             {log.msg}
                           </span>
                         </div>
@@ -548,14 +544,14 @@ export const App: React.FC = () => {
                 </div>
               </div>
 
-              {/* Recent History in Sidebar */}
+              {/* History List */}
               {recentSessions.length > 1 && (
-                <div className="rounded-2xl border border-surface-border bg-surface-card p-4 space-y-2.5">
+                <div className="rounded-2xl border border-surface-border bg-surface-card p-4 space-y-2">
                   <span className="text-[11px] font-bold uppercase tracking-wider text-slate-400 block">
                     Previous Investigations
                   </span>
-                  <div className="space-y-1.5">
-                    {recentSessions.slice(1, 5).map((s) => (
+                  <div className="space-y-1">
+                    {recentSessions.slice(1, 4).map((s) => (
                       <button
                         key={s.session_id}
                         onClick={() => setActiveSession(s)}
@@ -572,7 +568,7 @@ export const App: React.FC = () => {
         </div>
       </div>
 
-      {/* Clean Minimalist Footer */}
+      {/* Footer */}
       <footer className="border-t border-surface-border bg-[#0B0F19] py-4 text-center text-[11px] text-slate-500 no-print">
         VERITAS AI — PromptWars PS03 Autonomous Multi-Agent Research Platform
       </footer>

@@ -31,6 +31,27 @@ class BaseSearchProvider(ABC):
         pass
 
 
+class MockSearchProvider(BaseSearchProvider):
+    """Deterministic mock provider for lightning-fast automated testing and offline environments."""
+    async def search(self, query: str, domain: ResearchDomain, max_results: int) -> List[Source]:
+        q_lower = query.lower()
+        if any(term in q_lower for term in ["replacing software developers", "copilot", "developer productivity"]):
+            return AI_DEVELOPER_PRODUCTIVITY_FIXTURES[:max_results]
+        
+        return [
+            Source(
+                title=f"Empirical Reference: {query.title()}",
+                url=f"https://en.wikipedia.org/wiki/{urllib.parse.quote(query[:40].replace(' ', '_'))}",
+                publisher="Academic Knowledge Base",
+                publication_date="2024-05-10",
+                source_type="peer_reviewed",
+                content_excerpt=f"Controlled investigations and published documentation regarding {query}. Verified findings confirm key baseline parameters across replicated trials.",
+                credibility_score=0.92,
+                discovered_by_query=query
+            )
+        ][:max_results]
+
+
 class WikipediaProvider(BaseSearchProvider):
     """Retrieves authoritative encyclopedic articles and citations for any query."""
     async def search(self, query: str, domain: ResearchDomain, max_results: int) -> List[Source]:
@@ -172,16 +193,21 @@ class TavilySearchProvider(BaseSearchProvider):
 class HybridSearchProvider(BaseSearchProvider):
     """
     Search coordinator:
-    1. If Tavily API key is available, uses Tavily.
-    2. Dynamically queries Wikipedia REST API + DuckDuckGo for ANY inquiry.
-    3. If query specifically matches the Hackathon AI developer benchmark, includes the pre-verified studies.
+    1. If test mock mode active, returns deterministic fast fixtures.
+    2. If Tavily API key is available, uses Tavily.
+    3. Dynamically queries Wikipedia REST API + DuckDuckGo for ANY inquiry.
+    4. If query specifically matches the Hackathon AI developer benchmark, includes the pre-verified studies.
     """
     def __init__(self):
+        self.mock = MockSearchProvider()
         self.tavily = TavilySearchProvider()
         self.wiki = WikipediaProvider()
         self.ddg = DuckDuckGoProvider()
 
     async def search(self, query: str, domain: ResearchDomain, max_results: int) -> List[Source]:
+        if settings.SEARCH_PROVIDER == "mock":
+            return await self.mock.search(query, domain, max_results)
+
         sources: List[Source] = []
 
         # 1. Tavily (if API key present)
