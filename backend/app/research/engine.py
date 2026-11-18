@@ -1,6 +1,6 @@
 """
 VERITAS AI - Core Autonomous Web Research Engine
-Decomposes complex research questions, runs parallel bounded searches, and normalizes sources.
+Decomposes complex research questions dynamically, runs parallel bounded searches, and normalizes sources.
 """
 
 import asyncio
@@ -20,18 +20,19 @@ class ResearchEngine:
 
     def decompose_query(self, query: str, depth: ResearchDepth) -> List[str]:
         """
-        Generates 3 to 6 targeted research subquestions based on inquiry intent and depth.
+        Dynamically generates targeted research subquestions based on inquiry intent.
+        Always begins with the exact raw query, followed by objective investigative angles.
         """
         clean_q = query.strip()
         count = 3 if depth == ResearchDepth.BRIEF else (4 if depth == ResearchDepth.STANDARD else 6)
 
         subquestions = [
-            f"Empirical statistics and productivity metrics on: {clean_q}",
-            f"Independent labor market impact and employment trends regarding: {clean_q}",
-            f"Technical quality, security limitations, and counterevidence on: {clean_q}",
-            f"Industry forecasts and longitudinal case studies on: {clean_q}",
-            f"Comparative analysis of developer sentiment vs code churn regarding: {clean_q}",
-            f"Expert consensus and regulatory or methodological challenges for: {clean_q}"
+            clean_q,  # Primary raw query first
+            f"Empirical evidence and published data regarding {clean_q}",
+            f"Verified findings and primary documentation on {clean_q}",
+            f"Counter-perspectives, conflicting evidence, and limitations concerning {clean_q}",
+            f"Systematic review and observational outcomes for {clean_q}",
+            f"Longitudinal studies and critical analysis of {clean_q}"
         ]
         return subquestions[:count]
 
@@ -55,7 +56,7 @@ class ResearchEngine:
         normalizes the results, and deduplicates the sources.
         """
         subqueries = self.decompose_query(query, depth)
-        logger.info(f"Decomposed '{query}' into {len(subqueries)} targeted subquestions.")
+        logger.info(f"Decomposed '{query}' into {len(subqueries)} targeted analytical tracks.")
 
         limit_per_query = max(2, max_sources // len(subqueries) + 1)
         tasks = [
@@ -73,5 +74,5 @@ class ResearchEngine:
         deduped.sort(key=lambda s: s.credibility_score, reverse=True)
 
         selected = deduped[:max_sources]
-        logger.info(f"Retrieved and normalized {len(selected)} unique sources.")
+        logger.info(f"Retrieved and normalized {len(selected)} unique sources for inquiry: '{query}'.")
         return selected

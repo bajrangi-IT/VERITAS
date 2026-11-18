@@ -18,14 +18,15 @@ class OrchestratorAgent(BaseAgent):
         self.engine = engine or ResearchEngine()
 
     async def process(self, session: ResearchSession) -> Dict[str, Any]:
-        # 1. Domain context identification
-        query_lower = session.original_query.lower()
-        if any(w in query_lower for w in ["ai", "software", "code", "developer", "algorithm", "tech"]):
-            session.domain = ResearchDomain.TECHNOLOGY
-        elif any(w in query_lower for w in ["study", "trial", "physics", "biology", "vaccine", "climate"]):
-            session.domain = ResearchDomain.SCIENTIFIC
-        elif any(w in query_lower for w in ["law", "policy", "government", "regulation", "bill"]):
-            session.domain = ResearchDomain.GOVERNMENT
+        # 1. Domain context identification (only auto-detect if general)
+        if session.domain == ResearchDomain.GENERAL:
+            query_lower = session.original_query.lower()
+            if any(w in query_lower for w in ["ai", "software", "code", "developer", "algorithm", "tech", "computer"]):
+                session.domain = ResearchDomain.TECHNOLOGY
+            elif any(w in query_lower for w in ["study", "trial", "physics", "biology", "vaccine", "climate", "mars", "space", "water", "health", "fasting", "diet"]):
+                session.domain = ResearchDomain.SCIENTIFIC
+            elif any(w in query_lower for w in ["law", "policy", "government", "regulation", "bill", "president", "court"]):
+                session.domain = ResearchDomain.GOVERNMENT
 
         # 2. Decompose question into targeted subqueries
         subquestions = self.engine.decompose_query(session.original_query, session.research_depth)
