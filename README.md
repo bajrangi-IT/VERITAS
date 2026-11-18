@@ -13,6 +13,22 @@
 
 ---
 
+## 🚀 1-Click Instant Deployment
+
+VERITAS AI features a unified production runtime serving both the FastAPI REST/SSE API and the React TypeScript frontend from a single port.
+
+| Deployment Target | 1-Click Action | Notes |
+| :--- | :--- | :--- |
+| **Render Cloud** | [![Deploy to Render](https://render.com/images/deploy-to-render-button.svg)](https://render.com/deploy) | Auto-detects `render.yaml`, builds multi-stage Docker container |
+| **Railway Cloud** | [![Deploy on Railway](https://railway.app/button.svg)](https://railway.app/new) | Uses `railway.json` with automated `/api/health` monitoring |
+| **Local Docker** | `docker compose up --build` | Runs full stack on `http://localhost:8000` |
+| **Windows Host** | Double-click `run.bat` | Launches backend, checks UI, opens browser |
+| **Linux / macOS** | `./run.sh` or `python start.py` | Universal 1-click execution script |
+
+*For complete deployment instructions, see [DEPLOYMENT.md](file:///z:/PROJECTS/vertis/DEPLOYMENT.md).*
+
+---
+
 ## 1. Selected Challenge & Vertical Alignment
 
 - **Challenge Vertical**: **PromptWars PS03 — Autonomous Fact Verification & Multi-Agent Intelligence Engine**

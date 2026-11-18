@@ -1,0 +1,20 @@
+# ==============================================================================
+# VERITAS AI - Render Blueprint (1-Click Cloud Deployment)
+# Deploy directly to Render: https://render.com/deploy
+# ==============================================================================
+
+services:
+  - type: web
+    name: veritas-ai
+    runtime: docker
+    plan: free
+    region: oregon
+    dockerfilePath: ./Dockerfile
+    healthCheckPath: /api/health
+    envVars:
+      - key: SEARCH_PROVIDER
+        value: hybrid
+      - key: LOG_LEVEL
+        value: INFO
+      - key: TAVILY_API_KEY
+        sync: false

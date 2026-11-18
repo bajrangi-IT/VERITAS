@@ -61,3 +61,11 @@ async def test_cancel_session_endpoint():
         cancel_res = await client.post(f"/api/research/{session_id}/cancel")
         assert cancel_res.status_code == 200
         assert cancel_res.json()["status"] == "cancelled"
+
+
+@pytest.mark.asyncio
+async def test_root_spa_or_info_endpoint():
+    transport = ASGITransport(app=app)
+    async with AsyncClient(transport=transport, base_url="http://test") as client:
+        res = await client.get("/")
+        assert res.status_code == 200
