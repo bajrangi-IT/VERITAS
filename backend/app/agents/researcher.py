@@ -42,19 +42,27 @@ class ResearcherAgent(BaseAgent):
                 message=f"Discovered evidence source from {src.publisher}: '{src.title[:50]}...'"
             ))
 
-        # 2. Extract candidate propositions from gathered evidence
-        candidate_claims: List[Claim] = []
+        # 2. Extract candidate propositions: Primary proposition is ALWAYS the user's inquiry
+        candidate_claims: List[Claim] = [
+            Claim(
+                claim_text=session.original_query,
+                supporting_sources=[],
+                contradicting_sources=[],
+                explanation="Primary research proposition under empirical investigation."
+            )
+        ]
         for src in sources:
             text = src.content_excerpt
             # Extract key declarative sentences as candidate propositions
             sentences = [s.strip() for s in text.split(". ") if len(s.strip()) > 35]
             if sentences:
                 claim_text = sentences[0]
-                candidate_claims.append(Claim(
-                    claim_text=claim_text,
-                    supporting_sources=[src.source_id],
-                    explanation=f"Initially extracted proposition from {src.publisher}."
-                ))
+                if claim_text.lower() != session.original_query.lower():
+                    candidate_claims.append(Claim(
+                        claim_text=claim_text,
+                        supporting_sources=[src.source_id],
+                        explanation=f"Contextual documentation from {src.publisher}."
+                    ))
 
         session.claims = candidate_claims[:8]
 
