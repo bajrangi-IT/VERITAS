@@ -23,7 +23,14 @@ class SynthesisAgent(BaseAgent):
         q_lower = session.original_query.lower()
 
         # 1. PUNCHY, DIRECT BOTTOM-LINE VERDICT (The "Main Line" that answers the question in 2 seconds)
-        if any(w in q_lower for w in ["replacing software developers", "copilot", "developer productivity"]):
+        if q_lower in ["hi", "hii", "hello", "hey", "hola", "test"]:
+            verdict = "VERITAS AI is ready. Enter any factual proposition, question, or hypothesis to begin autonomous multi-agent verification."
+            summary_text = (
+                "• Pipeline Status: All 6 autonomous agents (Orchestrator, Researcher, Verifier, Skeptic, Evidence Analyst, Synthesis) are operational.\n"
+                "• Capabilities: Real-time citation retrieval, 5-tier claim verification, and empirical discrepancy detection.\n"
+                "• Suggested Inquiries: 'Did NASA confirm water on Mars?', 'Is AI replacing software developers?', or 'Intermittent fasting weight loss'."
+            )
+        elif any(w in q_lower for w in ["replacing software developers", "copilot", "developer productivity"]):
             verdict = "Verdict: AI dramatically increases task velocity (40%–55% faster), but is NOT replacing software engineers; however, code churn has spiked 41% and security vulnerabilities proliferate without human architectural review."
             summary_text = (
                 "• Primary Finding: AI assistants act as a force-multiplier for routine boilerplate and documentation (40%–55% speedups across MIT & Microsoft trials).\n"

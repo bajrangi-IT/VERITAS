@@ -43,7 +43,15 @@ export async function createResearch(params: {
 
   if (!res.ok) {
     const errorData = await res.json().catch(() => ({ detail: 'Research request failed' }));
-    throw new Error(errorData.detail || `Server error (${res.status})`);
+    let errorMsg = 'Research request failed';
+    if (typeof errorData.detail === 'string') {
+      errorMsg = errorData.detail;
+    } else if (Array.isArray(errorData.detail)) {
+      errorMsg = errorData.detail.map((e: any) => e.msg || JSON.stringify(e)).join(', ');
+    } else if (errorData.message) {
+      errorMsg = errorData.message;
+    }
+    throw new Error(errorMsg);
   }
   return res.json();
 }

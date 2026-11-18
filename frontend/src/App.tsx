@@ -116,7 +116,7 @@ export const App: React.FC = () => {
 
   const runInvestigation = async (targetQuery: string, targetDomain?: ResearchDomain) => {
     const cleanQ = targetQuery.trim();
-    if (!cleanQ || cleanQ.length < 3) return;
+    if (!cleanQ) return;
 
     const d = targetDomain || domain;
     setQuery(cleanQ);

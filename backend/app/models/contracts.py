@@ -59,7 +59,7 @@ class AgentStatus(str, Enum):
 
 class ResearchRequest(BaseModel):
     """Client request model for launching autonomous investigation."""
-    query: str = Field(..., min_length=5, max_length=1000, description="The research question to investigate")
+    query: str = Field(..., min_length=1, max_length=1000, description="The research question to investigate")
     domain: ResearchDomain = Field(default=ResearchDomain.GENERAL, description="Domain context for source weighting")
     research_depth: ResearchDepth = Field(default=ResearchDepth.STANDARD, description="Depth of agent decomposition")
     maximum_sources: int = Field(default=8, ge=2, le=25, description="Upper bound of external references")
@@ -69,8 +69,8 @@ class ResearchRequest(BaseModel):
     @classmethod
     def clean_query(cls, v: str) -> str:
         cleaned = v.strip()
-        if len(cleaned) < 5:
-            raise ValueError("Research question must contain at least 5 meaningful characters.")
+        if len(cleaned) < 1:
+            raise ValueError("Research question must not be empty.")
         return cleaned
 
 
