@@ -1,0 +1,28 @@
+{
+  "name": "veritas-ai-monorepo",
+  "version": "1.0.0",
+  "private": true,
+  "description": "VERITAS AI — Autonomous Multi-Agent Research & Fact-Verification Platform",
+  "workspaces": [
+    "frontend"
+  ],
+  "scripts": {
+    "dev": "npm --prefix frontend run dev",
+    "build": "npm --prefix frontend run build",
+    "preview": "npm --prefix frontend run preview",
+    "backend": "python -m uvicorn backend.app.main:app --reload --host 0.0.0.0 --port 8000",
+    "test:backend": "python -m pytest tests/backend -v",
+    "test:frontend": "npm --prefix frontend run test",
+    "test": "npm run test:backend"
+  },
+  "keywords": [
+    "ai-agents",
+    "multi-agent",
+    "fact-checking",
+    "research-engine",
+    "fastapi",
+    "react",
+    "typescript"
+  ],
+  "license": "MIT"
+}
