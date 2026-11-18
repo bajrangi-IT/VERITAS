@@ -15,14 +15,23 @@ from backend.app.core.config import settings
 from backend.app.core.logging import logger
 from backend.app.core.security import is_safe_url
 
-STOP_WORDS = {"did", "does", "do", "is", "are", "was", "were", "what", "how", "why", "who", "which", "the", "a", "an"}
+STOP_WORDS = {"did", "does", "do", "is", "are", "was", "were", "what", "how", "why", "who", "which", "the", "a", "an", "of", "in", "to"}
+
+
+def normalize_query_text(query: str) -> str:
+    """Normalizes leetspeak typos like '0' -> 'o', '1' -> 'i' inside words."""
+    clean = re.sub(r'(?<=[A-Za-z])0(?=[A-Za-z])', 'o', query)
+    clean = re.sub(r'(?<=[A-Za-z])1(?=[A-Za-z])', 'i', clean)
+    clean = re.sub(r'(?<=[A-Za-z])3(?=[A-Za-z])', 'e', clean)
+    return clean
 
 
 def extract_keywords(query: str) -> str:
     """Strips question particles to create clean search terms."""
-    words = re.sub(r'[^\w\s]', '', query).split()
+    normalized = normalize_query_text(query)
+    words = re.sub(r'[^\w\s]', '', normalized).split()
     meaningful = [w for w in words if w.lower() not in STOP_WORDS]
-    return " ".join(meaningful) if meaningful else query
+    return " ".join(meaningful) if meaningful else normalized
 
 
 class BaseSearchProvider(ABC):
@@ -68,10 +77,22 @@ class WikipediaProvider(BaseSearchProvider):
 
             async with httpx.AsyncClient(timeout=8.0) as client:
                 resp = await client.get(search_url, headers=headers)
-                if resp.status_code != 200:
-                    return []
-                data = resp.json()
-                items = data.get("query", {}).get("search", [])[:max_results]
+                items = []
+                if resp.status_code == 200:
+                    items = resp.json().get("query", {}).get("search", [])
+
+                # Fallback: if compound search has 0 results, query individual prominent terms
+                if not items and len(clean_terms.split()) > 1:
+                    for word in clean_terms.split():
+                        if len(word) > 2 and word.lower() not in STOP_WORDS:
+                            sub_url = f"https://en.wikipedia.org/w/api.php?action=query&list=search&srsearch={urllib.parse.quote(word)}&format=json&utf8=1"
+                            sub_resp = await client.get(sub_url, headers=headers)
+                            if sub_resp.status_code == 200:
+                                items.extend(sub_resp.json().get("query", {}).get("search", [])[:3])
+                            if len(items) >= max_results:
+                                break
+
+                items = items[:max_results]
 
                 for item in items:
                     title = item.get("title")
